@@ -1,90 +1,87 @@
 import streamlit as st
-import pandas as pd
 import random
+import pandas as pd
+from datetime import date
 import os
-from datetime import date, datetime
-import time
 
-st.set_page_config(page_title="地理クイズ学習モード", layout="centered")
-st.title("🌍 地理クイズ学習モード")
-st.caption("正答率に応じて難易度調整＋タイマー付き学習モード")
+st.set_page_config(page_title="癒しアプリ（保存版）", layout="centered")
+st.title("🌿 今日の癒しアプリ（保存機能付き）")
+st.caption("ストレスを可視化＆癒しポイントを記録しつつ、ちょっと笑えるアプリ")
 
-# --- CSV保存 ---
-csv_file = "geo_quiz_log.csv"
+# --- CSV保存設定 ---
+csv_file = "healing_log.csv"
+
+# --- 初期化 ---
 if "logs" not in st.session_state:
     if os.path.exists(csv_file):
         st.session_state.logs = pd.read_csv(csv_file)
     else:
-        st.session_state.logs = pd.DataFrame(columns=["日付","問題","選択肢","正解","回答","正誤","難易度","回答時間"])
+        st.session_state.logs = pd.DataFrame(columns=["日付", "ストレス度", "癒しポイント", "ツッコミ", "メモ"])
 
-# --- サンプル問題データ（数十問に拡張可能） ---
-quiz_data = [
-    {"question": "日本で一番面積が大きい都道府県は？", "choices": ["北海道","東京","沖縄","大阪"], "answer": "北海道", "difficulty": 1},
-    {"question": "エベレストの標高は？", "choices": ["8848m","8611m","9000m","8700m"], "answer": "8848m", "difficulty": 2},
-    {"question": "カナダの首都は？", "choices": ["トロント","オタワ","モントリオール","バンクーバー"], "answer": "オタワ", "difficulty": 1},
-    {"question": "アフリカで最も人口の多い国は？", "choices": ["ナイジェリア","エジプト","南アフリカ","ケニア"], "answer": "ナイジェリア", "difficulty": 2},
-    {"question": "日本の最北端の島は？", "choices": ["択捉島","利尻島","礼文島","奥尻島"], "answer": "択捉島", "difficulty": 3},
-    # ... 数十〜数百問に拡張可能
-]
+# --- 入力 ---
+st.subheader("今日のストレス度を教えて")
+stress = st.slider("1:超平和〜5:限界超え", 1.0, 5.0, 3.0, 0.1)
 
-# --- 難易度調整（正答率に応じて） ---
-if not st.session_state.logs.empty:
-    total = len(st.session_state.logs)
-    correct = st.session_state.logs['正誤'].sum()
-    rate = correct / total if total>0 else 0
-else:
-    rate = 0.5
+st.subheader("今日の気分・状況を一言（任意）")
+mood = st.text_input("例：仕事で疲れた、勉強しんどい…")
 
-if rate >= 0.8:
-    difficulty_level = 3  # 高正答率 → 難問
-elif rate >= 0.5:
-    difficulty_level = 2
-else:
-    difficulty_level = 1
+# --- レパートリー ---
+relax_tips = [
+    "深呼吸して5秒キープ", "お気に入りの飲み物で一息",
+    "ちょっと外に出て日光を浴びる", "軽くストレッチしてみる",
+    "猫動画を見る（無敵）", "コーヒー片手に妄想タイム",
+    "チョコひとかけで幸せ補充", "スマホ置いて目を閉じる",
+    "お気に入りの曲を1曲聴く", "手をもみもみしてリラックス",
+    "深呼吸しながら変顔してみる", "ラーメン食べる妄想する",
+    "お風呂で1分間瞑想", "今日1つラッキーなこと思い出す",
+    "空を眺めて1分ぼーっとする", "ストレスを紙に書いて破る",
+    "軽く腕立て10回", "好きな香りで深呼吸", "窓を開けて新鮮な空気吸う"
+] * 3
 
-available_questions = [q for q in quiz_data if q["difficulty"]==difficulty_level]
-quiz = random.choice(available_questions)
+funny_comments = [
+    "今日も脳みそ半休やな😂", "ストレス高め…アイスでごまかすしかないで！",
+    "無理すんな、人生はラーメンの汁と同じやで", "大丈夫、猫は全部許してくれる",
+    "ふーん、そういう日やな😏", "深呼吸より先に笑っとけ",
+    "今日は寝落ち推奨やで", "脳みそは有給休暇中です", 
+    "コーヒーを求めて彷徨う日やな", "やる気スイッチは押さなくてOK",
+    "ストレス値が高すぎてセンサー壊れたかも", "ちょっと遊んでもええ日やで",
+    "今日のあなたの精神力…MAXは無理やな", "笑いでカロリー消費や", "深呼吸しても酸素足りんかも"
+] * 3
 
-# --- 一問一答形式 ---
-st.subheader(f"難易度 {quiz['difficulty']} 問題")
-st.write(quiz["question"])
-user_choice = st.radio("選択してください", quiz["choices"])
+# --- 生成 ---
+if st.button("🧘 癒しポイントを出す"):
+    num_tips = max(1, int(round(6 - stress)))
+    tips_to_show = random.sample(relax_tips, k=num_tips)
+    comment_out = random.choice(funny_comments)
 
-# --- タイマー（例：30秒） ---
-st.write("回答は30秒以内に！")
-if st.button("回答"):
-    start_time = datetime.now()
-    
-    # ここでタイマー制限を入れる場合は st.progress 等で表示可
-    # 実装簡易化のためスキップ
-    
-    correct = user_choice == quiz["answer"]
-    if correct:
-        st.success("正解！🎉")
-    else:
-        st.error(f"不正解…正解は {quiz['answer']} です")
+    # --- 表示 ---
+    st.subheader("🌟 今日の癒しポイント")
+    for tip in tips_to_show:
+        st.write(f"- {tip}")
 
-    elapsed_time = (datetime.now() - start_time).seconds
+    st.subheader("💬 今日のツッコミ")
+    st.info(comment_out)
+
+    if mood:
+        st.subheader("📝 自分メモ")
+        st.code(mood)
 
     # --- 保存 ---
     new_entry = pd.DataFrame({
-        "日付":[date.today()],
-        "問題":[quiz["question"]],
-        "選択肢":[", ".join(quiz["choices"])],
-        "正解":[quiz["answer"]],
-        "回答":[user_choice],
-        "正誤":[correct],
-        "難易度":[quiz["difficulty"]],
-        "回答時間":[elapsed_time]
+        "日付": [date.today()],
+        "ストレス度": [stress],
+        "癒しポイント": ["; ".join(tips_to_show)],
+        "ツッコミ": [comment_out],
+        "メモ": [mood]
     })
+
     st.session_state.logs = pd.concat([st.session_state.logs, new_entry], ignore_index=True)
-    st.session_state.logs.to_csv(csv_file,index=False)
+    st.session_state.logs.to_csv(csv_file, index=False)
+    st.success("✅ 今日のデータを保存しました！")
 
 # --- 過去ログ表示 ---
-st.subheader("📚 過去のログ")
+st.subheader("📚 過去の癒しログ")
 if not st.session_state.logs.empty:
     st.dataframe(st.session_state.logs)
-    # 正答率計算
-    total = len(st.session_state.logs)
-    correct = st.session_state.logs['正誤'].sum()
-    st.write(f"現在の正答率: {correct}/{total} = {correct/total:.1%}")
+else:
+    st.write("まだ記録はありません。")
