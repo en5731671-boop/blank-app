@@ -23,7 +23,7 @@ st.subheader("今日のストレス度を教えて")
 stress = st.slider("1:超平和〜5:限界超え", 1.0, 5.0, 3.0, 0.1)
 
 st.subheader("今日の気分・状況を一言（任意）")
-mood = st.text_input("例：疲れた、勉強しんどい…、たのし")
+mood = st.text_input("例：疲れた、勉強しんど、たのし")
 
 # --- レパートリー ---
 relax_tips = [
