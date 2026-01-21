@@ -69,7 +69,7 @@ if st.button("🧘 癒しポイントを出す"):
 
     # --- 保存 ---
     new_entry = pd.DataFrame({
-        "日付": [date.today()],
+        "日付": [date.today().isoformat()],
         "ストレス度": [stress],
         "癒しポイント": ["; ".join(tips_to_show)],
         "ツッコミ": [comment_out],
@@ -84,15 +84,20 @@ if st.button("🧘 癒しポイントを出す"):
 st.subheader("📚 過去の癒しログ")
 if not st.session_state.logs.empty:
     st.dataframe(st.session_state.logs)
-    
+
     # --- グラフ表示 ---
     st.subheader("📈 ストレス値の推移")
-    plt.figure(figsize=(8,4))
-    plt.plot(pd.to_datetime(st.session_state.logs["日付"]), st.session_state.logs["ストレス度"], marker='o', linestyle='-')
-    plt.ylim(0, 6)
-    plt.xlabel("日付")
-    plt.ylabel("ストレス度")
-    plt.title("ストレス値の推移")
-    st.pyplot(plt)
+    df_plot = st.session_state.logs.copy()
+    df_plot["日付"] = pd.to_datetime(df_plot["日付"])
+    df_plot = df_plot.sort_values("日付")
+
+    fig, ax = plt.subplots(figsize=(8,4))
+    ax.plot(df_plot["日付"], df_plot["ストレス度"], marker='o', linestyle='-')
+    ax.set_ylim(0, 6)
+    ax.set_xlabel("日付")
+    ax.set_ylabel("ストレス度")
+    ax.set_title("ストレス値の推移")
+    plt.xticks(rotation=45)
+    st.pyplot(fig)
 else:
     st.write("まだ記録はありません。")
