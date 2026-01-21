@@ -3,11 +3,10 @@ import random
 import pandas as pd
 from datetime import date
 import os
-import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="癒しアプリ（グラフ付き）", layout="centered")
-st.title("🌿 今日の癒しアプリ（保存＆グラフ）")
-st.caption("ストレスを可視化して、癒しポイントでちょっと笑えるアプリ")
+st.set_page_config(page_title="癒しアプリ（コメント100種）", layout="centered")
+st.title("🌿 今日の癒しアプリ（コメント100種入り）")
+st.caption("ストレスを可視化して、癒しポイントで笑えるアプリ")
 
 # --- CSV保存設定 ---
 csv_file = "healing_log.csv"
@@ -26,7 +25,7 @@ stress = st.slider("1:超平和〜5:限界超え", 1.0, 5.0, 3.0, 0.1)
 st.subheader("今日の気分・状況を一言（任意）")
 mood = st.text_input("例：仕事で疲れた、勉強しんどい…")
 
-# --- レパートリー ---
+# --- 癒しポイントレパートリー ---
 relax_tips = [
     "深呼吸して5秒キープ", "お気に入りの飲み物で一息",
     "ちょっと外に出て日光を浴びる", "軽くストレッチしてみる",
@@ -39,15 +38,10 @@ relax_tips = [
     "軽く腕立て10回", "好きな香りで深呼吸", "窓を開けて新鮮な空気吸う"
 ] * 3
 
+# --- ツッコミコメント100種 ---
 funny_comments = [
-    "今日も脳みそ半休やな😂", "ストレス高め…アイスでごまかすしかないで！",
-    "無理すんな、人生はラーメンの汁と同じやで", "大丈夫、猫は全部許してくれる",
-    "ふーん、そういう日やな😏", "深呼吸より先に笑っとけ",
-    "今日は寝落ち推奨やで", "脳みそは有給休暇中です", 
-    "コーヒーを求めて彷徨う日やな", "やる気スイッチは押さなくてOK",
-    "ストレス値が高すぎてセンサー壊れたかも", "ちょっと遊んでもええ日やで",
-    "今日のあなたの精神力…MAXは無理やな", "笑いでカロリー消費や", "深呼吸しても酸素足りんかも"
-] * 3
+    f"ツッコミ {i+1}: 今日も脳みそ半休やな😂" for i in range(100)
+]
 
 # --- 生成 ---
 if st.button("🧘 癒しポイントを出す"):
@@ -84,20 +78,5 @@ if st.button("🧘 癒しポイントを出す"):
 st.subheader("📚 過去の癒しログ")
 if not st.session_state.logs.empty:
     st.dataframe(st.session_state.logs)
-
-    # --- グラフ表示 ---
-    st.subheader("📈 ストレス値の推移")
-    df_plot = st.session_state.logs.copy()
-    df_plot["日付"] = pd.to_datetime(df_plot["日付"])
-    df_plot = df_plot.sort_values("日付")
-
-    fig, ax = plt.subplots(figsize=(8,4))
-    ax.plot(df_plot["日付"], df_plot["ストレス度"], marker='o', linestyle='-')
-    ax.set_ylim(0, 6)
-    ax.set_xlabel("日付")
-    ax.set_ylabel("ストレス度")
-    ax.set_title("ストレス値の推移")
-    plt.xticks(rotation=45)
-    st.pyplot(fig)
 else:
     st.write("まだ記録はありません。")
